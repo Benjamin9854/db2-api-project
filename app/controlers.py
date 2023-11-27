@@ -8,6 +8,8 @@ from app.dtos import (
     AuthorUpdateDTO,
     AuthorWriteDTO,
     BookReadDTO,
+    BookGetDTO,
+    BookUpdateDTO,
     BookWriteDTO,
 )
 from app.models import Author, Book
@@ -55,6 +57,19 @@ class BookController(Controller):
     @get()
     async def list_books(self, books_repo: BookRepository) -> list[Book]:
         return books_repo.list()
+    
+    @get("/{book_id:int}", return_dto=BookGetDTO)
+    async def get_book(self, book_id: int, books_repo: BookRepository) -> Book:
+        return books_repo.get(book_id)
+    
+
+    @patch("/{book_id:int}", dto=BookUpdateDTO)
+    async def update_book(
+        self, book_id: int, data: DTOData[Book], books_repo: BookRepository
+    ) -> Book:
+        book = books_repo.get(book_id)
+        book = data.update_instance(book)
+        return books_repo.update(book)
 
     @post(dto=BookWriteDTO)
     async def create_book(self, data: Book, books_repo: BookRepository) -> Book:
