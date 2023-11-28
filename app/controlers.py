@@ -1,6 +1,8 @@
+from litestar.exceptions import HTTPException
 from litestar import Controller, get, patch, post
 from litestar.di import Provide
 from litestar.dto import DTOData
+from advanced_alchemy.exceptions import NotFoundError
 
 from app.dtos import (
     AuthorReadDTO,
@@ -37,15 +39,21 @@ class AuthorController(Controller):
 
     @get("/{author_id:int}", return_dto=AuthorReadFullDTO)
     async def get_author(self, author_id: int, authors_repo: AuthorRepository) -> Author:
-        return authors_repo.get(author_id)
+        try:
+            return authors_repo.get(author_id)
+        except NotFoundError:
+            raise HTTPException("El autor no existe", status_code=404)
 
     @patch("/{author_id:int}", dto=AuthorUpdateDTO)
     async def update_author(
         self, author_id: int, data: DTOData[Author], authors_repo: AuthorRepository
     ) -> Author:
-        author = authors_repo.get(author_id)
-        author = data.update_instance(author)
-        return authors_repo.update(author)
+        try:
+            author = authors_repo.get(author_id)
+            author = data.update_instance(author)
+            return authors_repo.update(author)
+        except NotFoundError:
+            raise HTTPException("El autor no existe", status_code=404)
 
 
 class BookController(Controller):
@@ -60,16 +68,22 @@ class BookController(Controller):
     
     @get("/{book_id:int}", return_dto=BookGetDTO)
     async def get_book(self, book_id: int, books_repo: BookRepository) -> Book:
-        return books_repo.get(book_id)
+        try:
+            return books_repo.get(book_id)
+        except NotFoundError:
+            raise HTTPException("El libro no existe", status_code=404)
     
 
     @patch("/{book_id:int}", dto=BookUpdateDTO)
     async def update_book(
         self, book_id: int, data: DTOData[Book], books_repo: BookRepository
     ) -> Book:
-        book = books_repo.get(book_id)
-        book = data.update_instance(book)
-        return books_repo.update(book)
+        try:
+            book = books_repo.get(book_id)
+            book = data.update_instance(book)
+            return books_repo.update(book)
+        except NotFoundError:
+            raise HTTPException("El libro no existe", status_code=404)
 
     @post(dto=BookWriteDTO)
     async def create_book(self, data: Book, books_repo: BookRepository) -> Book:
