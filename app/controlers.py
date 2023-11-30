@@ -14,18 +14,24 @@ from app.dtos import (
     BookGetDTO,
     BookUpdateDTO,
     BookWriteDTO,
+    CategoryReadDTO,
+    CategoryReadFullDTO,
+    CategoryUpdateDTO,
+    CategoryWriteDTO,
     ClientReadDTO,
     ClientReadFullDTO,
     ClientUpdateDTO,
-    ClientWriteDTO
+    ClientWriteDTO,
 )
-from app.models import Author, Book, Client
+from app.models import Author, Book, Category, Client
 from app.repositories import (
     AuthorRepository,
     BookRepository,
+    CategoryRepository,
     ClientRepository,
     provide_authors_repo,
     provide_books_repo,
+    provide_categories_repo,
     provide_clients_repo,
 )
 
@@ -41,11 +47,15 @@ class AuthorController(Controller):
         return authors_repo.list()
 
     @post(dto=AuthorWriteDTO)
-    async def create_author(self, data: Author, authors_repo: AuthorRepository) -> Author:
+    async def create_author(
+        self, data: Author, authors_repo: AuthorRepository
+    ) -> Author:
         return authors_repo.add(data)
 
     @get("/{author_id:int}", return_dto=AuthorReadFullDTO)
-    async def get_author(self, author_id: int, authors_repo: AuthorRepository) -> Author:
+    async def get_author(
+        self, author_id: int, authors_repo: AuthorRepository
+    ) -> Author:
         try:
             return authors_repo.get(author_id)
         except NotFoundError:
@@ -72,21 +82,20 @@ class BookController(Controller):
     @get()
     async def list_books(self, books_repo: BookRepository) -> list[Book]:
         return books_repo.list()
-    
+
     @get("/{book_id:int}", return_dto=BookGetDTO)
     async def get_book(self, book_id: int, books_repo: BookRepository) -> Book:
         try:
             return books_repo.get(book_id)
         except NotFoundError:
             raise HTTPException("El libro no existe", status_code=404)
-        
+
     # @get("/{book_title:str}", return_dto=BookGetDTO)
     # async def get_book_title(self, book_title: str, books_repo: BookRepository) -> Book:
     #     try:
     #         return books_repo._filter_by_like(statement=lambda field: field.like(f'%{book_title}%'),field_name=Book.title,value=book_title,ignore_case=True)
     #     except NotFoundError:
     #         raise HTTPException("El libro no existe", status_code=404)
-    
 
     @patch("/{book_id:int}", dto=BookUpdateDTO)
     async def update_book(
@@ -104,7 +113,21 @@ class BookController(Controller):
         return books_repo.add(data)
     
 
+class CategoryController(Controller):
+    path = "/categories"
+    tags = ["categories"]
+    return_dto = CategoryReadDTO
+    dependencies = {"categories_repo": Provide(provide_categories_repo)}
 
+    @get()
+    async def list_categories(self, categories_repo: CategoryRepository) -> list[Category]:
+        return categories_repo.list()
+
+    @post(dto=CategoryWriteDTO)
+    async def create_category(
+        self, data: Category, categories_repo: CategoryRepository
+    ) -> Category:
+        return categories_repo.add(data)
 
 
 class ClientController(Controller):
@@ -118,11 +141,15 @@ class ClientController(Controller):
         return clients_repo.list()
 
     @post(dto=ClientWriteDTO)
-    async def create_client(self, data: Client, clients_repo: ClientRepository) -> Client:
+    async def create_client(
+        self, data: Client, clients_repo: ClientRepository
+    ) -> Client:
         return clients_repo.add(data)
-    
-    @get("/{client_id:int}", return_dto=ClientReadFullDTO)
-    async def get_client(self, client_id: int, clients_repo: ClientRepository) -> Client:
+
+    @get("/{client_id:int}", return_dto=ClientReadDTO)
+    async def get_client(
+        self, client_id: int, clients_repo: ClientRepository
+    ) -> Client:
         try:
             return clients_repo.get(client_id)
         except NotFoundError:
