@@ -3,6 +3,7 @@ from litestar import Controller, get, patch, post
 from litestar.di import Provide
 from litestar.dto import DTOData
 from advanced_alchemy.exceptions import NotFoundError
+from sqlalchemy import select
 
 from app.dtos import (
     AuthorReadDTO,
@@ -13,13 +14,19 @@ from app.dtos import (
     BookGetDTO,
     BookUpdateDTO,
     BookWriteDTO,
+    ClientReadDTO,
+    ClientReadFullDTO,
+    ClientUpdateDTO,
+    ClientWriteDTO
 )
-from app.models import Author, Book
+from app.models import Author, Book, Client
 from app.repositories import (
     AuthorRepository,
     BookRepository,
+    ClientRepository,
     provide_authors_repo,
     provide_books_repo,
+    provide_clients_repo,
 )
 
 
@@ -72,6 +79,13 @@ class BookController(Controller):
             return books_repo.get(book_id)
         except NotFoundError:
             raise HTTPException("El libro no existe", status_code=404)
+        
+    # @get("/{book_title:str}", return_dto=BookGetDTO)
+    # async def get_book_title(self, book_title: str, books_repo: BookRepository) -> Book:
+    #     try:
+    #         return books_repo._filter_by_like(statement=lambda field: field.like(f'%{book_title}%'),field_name=Book.title,value=book_title,ignore_case=True)
+    #     except NotFoundError:
+    #         raise HTTPException("El libro no existe", status_code=404)
     
 
     @patch("/{book_id:int}", dto=BookUpdateDTO)
@@ -88,3 +102,21 @@ class BookController(Controller):
     @post(dto=BookWriteDTO)
     async def create_book(self, data: Book, books_repo: BookRepository) -> Book:
         return books_repo.add(data)
+    
+
+
+
+
+class ClientController(Controller):
+    path = "/clients"
+    tags = ["clients"]
+    return_dto = ClientReadDTO
+    dependencies = {"clients_repo": Provide(provide_clients_repo)}
+
+    @get()
+    async def list_clients(self, clients_repo: ClientRepository) -> list[Client]:
+        return clients_repo.list()
+
+    @post(dto=ClientWriteDTO)
+    async def create_client(self, data: Client, clients_repo: ClientRepository) -> Client:
+        return clients_repo.add(data)

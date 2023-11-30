@@ -51,6 +51,12 @@ class Category(Base):
     )
 
 
+class Client(Base):
+    __tablename__ = "clients"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+
 class BookCategory(Base):
     __tablename__ = "books_categories"
 
