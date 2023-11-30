@@ -120,3 +120,21 @@ class ClientController(Controller):
     @post(dto=ClientWriteDTO)
     async def create_client(self, data: Client, clients_repo: ClientRepository) -> Client:
         return clients_repo.add(data)
+    
+    @get("/{client_id:int}", return_dto=ClientReadFullDTO)
+    async def get_client(self, client_id: int, clients_repo: ClientRepository) -> Client:
+        try:
+            return clients_repo.get(client_id)
+        except NotFoundError:
+            raise HTTPException("El cliente no existe", status_code=404)
+
+    @patch("/{client_id:int}", dto=ClientUpdateDTO)
+    async def update_client(
+        self, client_id: int, data: DTOData[Client], clients_repo: ClientRepository
+    ) -> Client:
+        try:
+            client = clients_repo.get(client_id)
+            client = data.update_instance(client)
+            return clients_repo.update(client)
+        except NotFoundError:
+            raise HTTPException("El cliente no existe", status_code=404)
