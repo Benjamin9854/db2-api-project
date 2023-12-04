@@ -26,7 +26,6 @@ from app.dtos import (
     LoanReadDTO,
     LoanReadFullDTO,
     LoanWriteDTO,
-    LoanUpdateDTO,
 )
 from app.models import Author, Book, Category, Client, Loan
 from app.repositories import (
@@ -130,6 +129,20 @@ class CategoryController(Controller):
         self, data: Category, categories_repo: CategoryRepository
     ) -> Category:
         return categories_repo.add(data)
+
+    @patch("/{category_id:int}", dto=CategoryUpdateDTO)
+    async def update_category(
+        self,
+        category_id: int,
+        data: DTOData[Category],
+        categories_repo: CategoryRepository,
+    ) -> Category:
+        try:
+            category = categories_repo.get(category_id)
+            category = data.update_instance(category)
+            return categories_repo.update(category)
+        except NotFoundError:
+            raise HTTPException("La categoria no existe", status_code=404)
 
 
 class ClientController(Controller):
