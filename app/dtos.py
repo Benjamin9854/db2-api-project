@@ -1,6 +1,6 @@
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO, SQLAlchemyDTOConfig
 
-from app.models import Author, Book, Category, Client
+from app.models import Author, Book, Category, Client, Loan
 
 
 class AuthorReadDTO(SQLAlchemyDTO[Author]):
@@ -36,7 +36,7 @@ class AuthorUpdateDTO(SQLAlchemyDTO[Author]):
 
 
 class ClientReadDTO(SQLAlchemyDTO[Client]):
-    config = SQLAlchemyDTOConfig(exclude={"books"})
+    pass
 
 
 class ClientReadFullDTO(SQLAlchemyDTO[Client]):
@@ -44,11 +44,11 @@ class ClientReadFullDTO(SQLAlchemyDTO[Client]):
 
 
 class ClientWriteDTO(SQLAlchemyDTO[Client]):
-    config = SQLAlchemyDTOConfig(exclude={"id", "books"})
+    config = SQLAlchemyDTOConfig(exclude={"id", "loans"})
 
 
 class ClientUpdateDTO(SQLAlchemyDTO[Client]):
-    config = SQLAlchemyDTOConfig(exclude={"id", "books"}, partial=True)
+    config = SQLAlchemyDTOConfig(exclude={"id", "loans"}, partial=True)
 
 
 
@@ -78,7 +78,6 @@ class BookGetDTO(SQLAlchemyDTO[Book]):
             "author.id",
             "author.biography",
             "author.date_of_birth",
-            "clients",
             "categories",
         }
     )
@@ -117,3 +116,22 @@ class CategoryWriteDTO(SQLAlchemyDTO[Category]):
 
 class CategoryUpdateDTO(SQLAlchemyDTO[Category]):
     config = SQLAlchemyDTOConfig(exclude={"id", "books"}, partial=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+class LoanReadFullDTO(SQLAlchemyDTO[Loan]):
+    pass
+
+
+class LoanWriteDTO(SQLAlchemyDTO[Loan]):
+    config = SQLAlchemyDTOConfig(exclude={"id", "date_loan", "fine", "state", "client"})

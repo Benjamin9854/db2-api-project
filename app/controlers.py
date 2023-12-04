@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from litestar.exceptions import HTTPException
 from litestar import Controller, get, patch, post, delete
 from litestar.di import Provide
@@ -22,17 +23,21 @@ from app.dtos import (
     ClientReadFullDTO,
     ClientUpdateDTO,
     ClientWriteDTO,
+    LoanReadFullDTO,
+    LoanWriteDTO,
 )
-from app.models import Author, Book, Category, Client
+from app.models import Author, Book, Category, Client, Loan
 from app.repositories import (
     AuthorRepository,
     BookRepository,
     CategoryRepository,
     ClientRepository,
+    LoanRepository,
     provide_authors_repo,
     provide_books_repo,
     provide_categories_repo,
     provide_clients_repo,
+    provide_loans_repo,
 )
 
 
@@ -152,6 +157,16 @@ class CategoryController(Controller):
         return categories_repo.add(data)
 
 
+
+
+
+
+
+
+
+
+
+
 class ClientController(Controller):
     path = "/clients"
     tags = ["clients"]
@@ -197,3 +212,32 @@ class ClientController(Controller):
             return clients_repo.update(client)
         except NotFoundError:
             raise HTTPException("El cliente no existe", status_code=404)
+        
+
+
+
+
+
+
+
+
+
+
+class LoanController(Controller):
+    path = "/loans"
+    tags = ["loans"]
+    return_dto = LoanReadFullDTO
+    dependencies = {"loans_repo": Provide(provide_loans_repo)}
+
+    @get()
+    async def list_loans(self, loans_repo: LoanRepository) -> list[Loan]:
+        return loans_repo.list()
+
+    @post(dto=LoanWriteDTO)
+    async def create_loan(
+        self, data: Loan, loans_repo: LoanRepository
+    ) -> Loan:
+        data.date_loan = (datetime.now().date() + timedelta(days=7))
+        data.state = False
+        data.fine = 0
+        return loans_repo.add(data)
