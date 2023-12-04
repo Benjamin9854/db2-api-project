@@ -36,7 +36,7 @@ class AuthorUpdateDTO(SQLAlchemyDTO[Author]):
 
 
 class ClientReadDTO(SQLAlchemyDTO[Client]):
-    pass
+    config = SQLAlchemyDTOConfig(exclude={"loans"})
 
 
 class ClientReadFullDTO(SQLAlchemyDTO[Client]):
@@ -67,13 +67,8 @@ class ClientUpdateDTO(SQLAlchemyDTO[Client]):
 
 
 class BookReadDTO(SQLAlchemyDTO[Book]):
-    pass
-
-
-class BookGetDTO(SQLAlchemyDTO[Book]):
     config = SQLAlchemyDTOConfig(
         exclude={
-            "id",
             "author_id",
             "author.id",
             "author.biography",
@@ -81,6 +76,10 @@ class BookGetDTO(SQLAlchemyDTO[Book]):
             "categories",
         }
     )
+
+
+class BookGetDTO(SQLAlchemyDTO[Book]):
+    pass
 
 
 class BookUpdateDTO(SQLAlchemyDTO[Book]):
@@ -131,6 +130,9 @@ class CategoryUpdateDTO(SQLAlchemyDTO[Category]):
 
 class LoanReadFullDTO(SQLAlchemyDTO[Loan]):
     pass
+
+class LoanReadDTO(SQLAlchemyDTO[Loan]):
+    config = SQLAlchemyDTOConfig(exclude={"date_loan", "fine" "client_id"})
 
 
 class LoanWriteDTO(SQLAlchemyDTO[Loan]):

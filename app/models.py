@@ -19,6 +19,7 @@ class Book(Base):
     year: Mapped[int]
     language: Mapped[str]
     copies: Mapped[int]
+    fine: Mapped[int]
     author_id: Mapped[int] = mapped_column(ForeignKey("authors.id"))
 
     # relationships

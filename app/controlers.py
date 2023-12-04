@@ -23,6 +23,7 @@ from app.dtos import (
     ClientReadFullDTO,
     ClientUpdateDTO,
     ClientWriteDTO,
+    LoanReadDTO,
     LoanReadFullDTO,
     LoanWriteDTO,
     LoanUpdateDTO,
@@ -52,12 +53,6 @@ class AuthorController(Controller):
     async def list_authors(self, authors_repo: AuthorRepository) -> list[Author]:
         return authors_repo.list()
 
-    @post(dto=AuthorWriteDTO)
-    async def create_author(
-        self, data: Author, authors_repo: AuthorRepository
-    ) -> Author:
-        return authors_repo.add(data)
-
     @get("/{author_id:int}", return_dto=AuthorReadFullDTO)
     async def get_author(
         self, author_id: int, authors_repo: AuthorRepository
@@ -66,7 +61,13 @@ class AuthorController(Controller):
             return authors_repo.get(author_id)
         except NotFoundError:
             raise HTTPException("El autor no existe", status_code=404)
-
+        
+    @post(dto=AuthorWriteDTO)
+    async def create_author(
+        self, data: Author, authors_repo: AuthorRepository
+    ) -> Author:
+        return authors_repo.add(data)
+    
     @patch("/{author_id:int}", dto=AuthorUpdateDTO)
     async def update_author(
         self, author_id: int, data: DTOData[Author], authors_repo: AuthorRepository
@@ -210,21 +211,31 @@ class ClientController(Controller):
 class LoanController(Controller):
     path = "/loans"
     tags = ["loans"]
-    return_dto = LoanReadFullDTO
-    dependencies = {"loans_repo": Provide(provide_loans_repo), "books_repo": Provide(provide_books_repo)}
+    return_dto = LoanReadDTO
+    dependencies = {"loans_repo": Provide(provide_loans_repo), "books_repo": Provide(provide_books_repo), "clients_repo": Provide(provide_clients_repo)}
 
     @get()
     async def list_loans(self, loans_repo: LoanRepository) -> list[Loan]:
         return loans_repo.list()
 
-    @post(dto=LoanWriteDTO)
+    @post(dto=LoanWriteDTO, return_dto=LoanReadFullDTO)
     async def create_loan(
-        self, data: Loan, loans_repo: LoanRepository, books_repo: BookRepository
+        self, data: Loan, loans_repo: LoanRepository, books_repo: BookRepository, clients_repo: ClientRepository
     ) -> Loan:
         data.date_loan = (datetime.now().date() + timedelta(days=7))
         data.state = False
         data.fine = 0
-        book = books_repo.get(data.id_book)
+
+        #verifica si existe el libro o el cliente
+        try:
+            book = books_repo.get(data.id_book)
+        except NotFoundError:
+            raise HTTPException("El libro no existe", status_code=404)
+        
+        try:
+            client = clients_repo.get(data.client_id)
+        except NotFoundError:
+            raise HTTPException("El cliente no existe", status_code=404)
 
         # Verificar si hay copias disponibles para prestar
         if book.copies <= 0:
@@ -244,12 +255,12 @@ class LoanController(Controller):
     ) -> Loan:
         try:
             loan = loans_repo.get(loan_id)
+            book = books_repo.get(loan.id_book)
             if loan.state == True:
                 raise HTTPException("El prestamo ya fue devuelto", status_code=404)
             if loan.date_loan < datetime.now().date():
-                loan.fine = 1000
+                loan.fine = book.fine
             loan.state = True
-            book = books_repo.get(loan.id_book)
             book.copies += 1
             books_repo.update(book)
             return loans_repo.update(loan)
