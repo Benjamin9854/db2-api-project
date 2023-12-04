@@ -62,7 +62,7 @@ class BookWriteDTO(SQLAlchemyDTO[Book]):
 
 
 class CategoryReadDTO(SQLAlchemyDTO[Category]):
-    config = SQLAlchemyDTOConfig(exclude={"books"})
+    config = SQLAlchemyDTOConfig(exclude={"id"})
 
 
 class CategoryReadFullDTO(SQLAlchemyDTO[Category]):
@@ -70,7 +70,7 @@ class CategoryReadFullDTO(SQLAlchemyDTO[Category]):
 
 
 class CategoryWriteDTO(SQLAlchemyDTO[Category]):
-    config = SQLAlchemyDTOConfig(exclude={"id", "books"})
+    config = SQLAlchemyDTOConfig(exclude={"id"})
 
 
 class CategoryUpdateDTO(SQLAlchemyDTO[Category]):

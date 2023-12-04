@@ -1,5 +1,5 @@
 from litestar.exceptions import HTTPException
-from litestar import Controller, get, patch, post
+from litestar import Controller, get, patch, post, delete
 from litestar.di import Provide
 from litestar.dto import DTOData
 from advanced_alchemy.exceptions import NotFoundError
@@ -145,6 +145,16 @@ class ClientController(Controller):
         self, data: Client, clients_repo: ClientRepository
     ) -> Client:
         return clients_repo.add(data)
+    
+    # @delete("/{client_id:int}")
+    # async def delete_client(
+    #     self, client_id: int, clients_repo: ClientRepository
+    # ) -> Client | bool:
+    #     try:
+    #         clients_repo.delete(client_id)
+    #         return True
+    #     except NotFoundError:
+    #         raise HTTPException("El cliente no existe", status_code=404)
 
     @get("/{client_id:int}", return_dto=ClientReadDTO)
     async def get_client(
