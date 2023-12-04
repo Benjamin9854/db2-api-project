@@ -61,13 +61,13 @@ class AuthorController(Controller):
             return authors_repo.get(author_id)
         except NotFoundError:
             raise HTTPException("El autor no existe", status_code=404)
-        
+
     @post(dto=AuthorWriteDTO)
     async def create_author(
         self, data: Author, authors_repo: AuthorRepository
     ) -> Author:
         return authors_repo.add(data)
-    
+
     @patch("/{author_id:int}", dto=AuthorUpdateDTO)
     async def update_author(
         self, author_id: int, data: DTOData[Author], authors_repo: AuthorRepository
@@ -78,16 +78,6 @@ class AuthorController(Controller):
             return authors_repo.update(author)
         except NotFoundError:
             raise HTTPException("El autor no existe", status_code=404)
-
-
-
-
-
-
-
-
-
-
 
 
 class BookController(Controller):
@@ -121,18 +111,6 @@ class BookController(Controller):
     @post(dto=BookWriteDTO)
     async def create_book(self, data: Book, books_repo: BookRepository) -> Book:
         return books_repo.add(data)
-    
-
-
-
-
-
-
-
-
-
-
-
 
 
 class CategoryController(Controller):
@@ -142,7 +120,9 @@ class CategoryController(Controller):
     dependencies = {"categories_repo": Provide(provide_categories_repo)}
 
     @get()
-    async def list_categories(self, categories_repo: CategoryRepository) -> list[Category]:
+    async def list_categories(
+        self, categories_repo: CategoryRepository
+    ) -> list[Category]:
         return categories_repo.list()
 
     @post(dto=CategoryWriteDTO)
@@ -150,16 +130,6 @@ class CategoryController(Controller):
         self, data: Category, categories_repo: CategoryRepository
     ) -> Category:
         return categories_repo.add(data)
-
-
-
-
-
-
-
-
-
-
 
 
 class ClientController(Controller):
@@ -197,22 +167,17 @@ class ClientController(Controller):
             return clients_repo.update(client)
         except NotFoundError:
             raise HTTPException("El cliente no existe", status_code=404)
-        
-
-
-
-
-
-
-
-
 
 
 class LoanController(Controller):
     path = "/loans"
     tags = ["loans"]
     return_dto = LoanReadDTO
-    dependencies = {"loans_repo": Provide(provide_loans_repo), "books_repo": Provide(provide_books_repo), "clients_repo": Provide(provide_clients_repo)}
+    dependencies = {
+        "loans_repo": Provide(provide_loans_repo),
+        "books_repo": Provide(provide_books_repo),
+        "clients_repo": Provide(provide_clients_repo),
+    }
 
     @get()
     async def list_loans(self, loans_repo: LoanRepository) -> list[Loan]:
@@ -220,18 +185,22 @@ class LoanController(Controller):
 
     @post(dto=LoanWriteDTO, return_dto=LoanReadFullDTO)
     async def create_loan(
-        self, data: Loan, loans_repo: LoanRepository, books_repo: BookRepository, clients_repo: ClientRepository
+        self,
+        data: Loan,
+        loans_repo: LoanRepository,
+        books_repo: BookRepository,
+        clients_repo: ClientRepository,
     ) -> Loan:
-        data.date_loan = (datetime.now().date() + timedelta(days=7))
+        data.date_loan = datetime.now().date() + timedelta(days=7)
         data.state = False
         data.fine = 0
 
-        #verifica si existe el libro o el cliente
+        # verifica si existe el libro o el cliente
         try:
             book = books_repo.get(data.id_book)
         except NotFoundError:
             raise HTTPException("El libro no existe", status_code=404)
-        
+
         try:
             client = clients_repo.get(data.client_id)
         except NotFoundError:
@@ -239,18 +208,19 @@ class LoanController(Controller):
 
         # Verificar si hay copias disponibles para prestar
         if book.copies <= 0:
-            raise HTTPException("No hay copias disponibles para prestar", status_code=400)
-        
+            raise HTTPException(
+                "No hay copias disponibles para prestar", status_code=400
+            )
+
         # Actualizar el número de copias del libro
         book.copies -= 1
         books_repo.update(book)
 
         # Crear el préstamo
         return loans_repo.add(data)
-    
 
     @post("/{loan_id:int}", return_dto=LoanReadFullDTO)
-    async def update_loan(
+    async def return_loan(
         self, loan_id: int, loans_repo: LoanRepository, books_repo: BookRepository
     ) -> Loan:
         try:

@@ -19,22 +19,6 @@ class AuthorUpdateDTO(SQLAlchemyDTO[Author]):
     config = SQLAlchemyDTOConfig(exclude={"id", "books"}, partial=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ClientReadDTO(SQLAlchemyDTO[Client]):
     config = SQLAlchemyDTOConfig(exclude={"loans"})
 
@@ -49,21 +33,6 @@ class ClientWriteDTO(SQLAlchemyDTO[Client]):
 
 class ClientUpdateDTO(SQLAlchemyDTO[Client]):
     config = SQLAlchemyDTOConfig(exclude={"id", "loans"}, partial=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class BookReadDTO(SQLAlchemyDTO[Book]):
@@ -90,17 +59,6 @@ class BookWriteDTO(SQLAlchemyDTO[Book]):
     config = SQLAlchemyDTOConfig(exclude={"id", "author"})
 
 
-
-
-
-
-
-
-
-
-
-
-
 class CategoryReadDTO(SQLAlchemyDTO[Category]):
     config = SQLAlchemyDTOConfig(exclude={"books"})
 
@@ -117,19 +75,9 @@ class CategoryUpdateDTO(SQLAlchemyDTO[Category]):
     config = SQLAlchemyDTOConfig(exclude={"id", "books"}, partial=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
 class LoanReadFullDTO(SQLAlchemyDTO[Loan]):
     pass
+
 
 class LoanReadDTO(SQLAlchemyDTO[Loan]):
     config = SQLAlchemyDTOConfig(exclude={"date_loan", "fine" "client_id"})
