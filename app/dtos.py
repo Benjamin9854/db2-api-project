@@ -135,3 +135,7 @@ class LoanReadFullDTO(SQLAlchemyDTO[Loan]):
 
 class LoanWriteDTO(SQLAlchemyDTO[Loan]):
     config = SQLAlchemyDTOConfig(exclude={"id", "date_loan", "fine", "state", "client"})
+
+
+class LoanUpdateDTO(SQLAlchemyDTO[Loan]):
+    config = SQLAlchemyDTOConfig(exclude={"id", "id_book", "date_loan", "client_id"})

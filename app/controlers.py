@@ -25,6 +25,7 @@ from app.dtos import (
     ClientWriteDTO,
     LoanReadFullDTO,
     LoanWriteDTO,
+    LoanUpdateDTO,
 )
 from app.models import Author, Book, Category, Client, Loan
 from app.repositories import (
@@ -235,3 +236,22 @@ class LoanController(Controller):
 
         # Crear el préstamo
         return loans_repo.add(data)
+    
+
+    @post("/{loan_id:int}", return_dto=LoanReadFullDTO)
+    async def update_loan(
+        self, loan_id: int, loans_repo: LoanRepository, books_repo: BookRepository
+    ) -> Loan:
+        try:
+            loan = loans_repo.get(loan_id)
+            if loan.state == True:
+                raise HTTPException("El prestamo ya fue devuelto", status_code=404)
+            if loan.date_loan < datetime.now().date():
+                loan.fine = 1000
+            loan.state = True
+            book = books_repo.get(loan.id_book)
+            book.copies += 1
+            books_repo.update(book)
+            return loans_repo.update(loan)
+        except NotFoundError:
+            raise HTTPException("El prestamo no existe", status_code=404)
