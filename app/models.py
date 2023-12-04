@@ -26,9 +26,6 @@ class Book(Base):
     categories: "Mapped[list[Category]]" = relationship(
         back_populates="books", secondary="books_categories"
     )
-    # clients: "Mapped[list[Client]]" = relationship(
-    #     back_populates="books", secondary="books_clients"
-    # )
 
 
 class Author(Base):
@@ -62,9 +59,6 @@ class Client(Base):
     name: Mapped[str]
 
     # relationships
-    # books: "Mapped[list[Book]]" = relationship(
-    #     back_populates="clients", secondary="books_clients"
-    # )
     loans: "Mapped[list[Loan]]" = relationship(back_populates="client")
 
 
@@ -89,10 +83,3 @@ class BookCategory(Base):
     category_id: Mapped[int] = mapped_column(
         ForeignKey("categories.id"), primary_key=True
     )
-
-
-# class BookClient(Base):
-#     __tablename__ = "books_clients"
-
-#     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), primary_key=True)
-#     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"), primary_key=True)

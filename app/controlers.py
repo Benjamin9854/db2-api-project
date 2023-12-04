@@ -105,13 +105,6 @@ class BookController(Controller):
         except NotFoundError:
             raise HTTPException("El libro no existe", status_code=404)
 
-    # @get("/{book_title:str}", return_dto=BookGetDTO)
-    # async def get_book_title(self, book_title: str, books_repo: BookRepository) -> Book:
-    #     try:
-    #         return books_repo._filter_by_like(statement=lambda field: field.like(f'%{book_title}%'),field_name=Book.title,value=book_title,ignore_case=True)
-    #     except NotFoundError:
-    #         raise HTTPException("El libro no existe", status_code=404)
-
     @patch("/{book_id:int}", dto=BookUpdateDTO)
     async def update_book(
         self, book_id: int, data: DTOData[Book], books_repo: BookRepository
@@ -182,16 +175,6 @@ class ClientController(Controller):
         self, data: Client, clients_repo: ClientRepository
     ) -> Client:
         return clients_repo.add(data)
-    
-    # @delete("/{client_id:int}")
-    # async def delete_client(
-    #     self, client_id: int, clients_repo: ClientRepository
-    # ) -> Client | bool:
-    #     try:
-    #         clients_repo.delete(client_id)
-    #         return True
-    #     except NotFoundError:
-    #         raise HTTPException("El cliente no existe", status_code=404)
 
     @get("/{client_id:int}", return_dto=ClientReadFullDTO)
     async def get_client(
@@ -227,7 +210,7 @@ class LoanController(Controller):
     path = "/loans"
     tags = ["loans"]
     return_dto = LoanReadFullDTO
-    dependencies = {"loans_repo": Provide(provide_loans_repo)}
+    dependencies = {"loans_repo": Provide(provide_loans_repo), "books_repo": Provide(provide_books_repo)}
 
     @get()
     async def list_loans(self, loans_repo: LoanRepository) -> list[Loan]:
@@ -235,9 +218,20 @@ class LoanController(Controller):
 
     @post(dto=LoanWriteDTO)
     async def create_loan(
-        self, data: Loan, loans_repo: LoanRepository
+        self, data: Loan, loans_repo: LoanRepository, books_repo: BookRepository
     ) -> Loan:
         data.date_loan = (datetime.now().date() + timedelta(days=7))
         data.state = False
         data.fine = 0
+        book = books_repo.get(data.id_book)
+
+        # Verificar si hay copias disponibles para prestar
+        if book.copies <= 0:
+            raise HTTPException("No hay copias disponibles para prestar", status_code=400)
+        
+        # Actualizar el número de copias del libro
+        book.copies -= 1
+        books_repo.update(book)
+
+        # Crear el préstamo
         return loans_repo.add(data)
