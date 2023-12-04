@@ -73,6 +73,16 @@ class AuthorController(Controller):
             raise HTTPException("El autor no existe", status_code=404)
 
 
+
+
+
+
+
+
+
+
+
+
 class BookController(Controller):
     path = "/books"
     tags = ["books"]
@@ -112,6 +122,18 @@ class BookController(Controller):
     async def create_book(self, data: Book, books_repo: BookRepository) -> Book:
         return books_repo.add(data)
     
+
+
+
+
+
+
+
+
+
+
+
+
 
 class CategoryController(Controller):
     path = "/categories"
@@ -156,7 +178,7 @@ class ClientController(Controller):
     #     except NotFoundError:
     #         raise HTTPException("El cliente no existe", status_code=404)
 
-    @get("/{client_id:int}", return_dto=ClientReadDTO)
+    @get("/{client_id:int}", return_dto=ClientReadFullDTO)
     async def get_client(
         self, client_id: int, clients_repo: ClientRepository
     ) -> Client:
