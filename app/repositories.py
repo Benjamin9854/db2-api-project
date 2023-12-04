@@ -1,3 +1,4 @@
+from ast import List
 from litestar.contrib.sqlalchemy.repository import SQLAlchemySyncRepository
 from sqlalchemy.orm import Session
 
@@ -27,6 +28,8 @@ class BookRepository(SQLAlchemySyncRepository[Book]):
 async def provide_books_repo(db_session: Session):
     return BookRepository(session=db_session, auto_commit=True)
 
+# async def search_by_title(self, title: str) -> List[Book]:
+#     return self.session.query(Book).filter(Book.title.ilike(f"%{title}%")).all()
 
 class CategoryRepository(SQLAlchemySyncRepository[Category]):
     model_type = Category

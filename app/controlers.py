@@ -1,3 +1,4 @@
+from ast import List
 from datetime import datetime, timedelta
 from litestar.exceptions import HTTPException
 from litestar import Controller, get, patch, post, delete
@@ -36,6 +37,7 @@ from app.repositories import (
     LoanRepository,
     provide_authors_repo,
     provide_books_repo,
+    # search_by_title,
     provide_categories_repo,
     provide_clients_repo,
     provide_loans_repo,
@@ -95,6 +97,15 @@ class BookController(Controller):
             return books_repo.get(book_id)
         except NotFoundError:
             raise HTTPException("El libro no existe", status_code=404)
+
+    # @get("/search_by_title/{title:str}", return_dto=BookGetDTO)
+    # async def search_books_by_title(
+    #     self, title: str, books_repo: BookRepository
+    # ) -> List[Book]:
+    #     books = books_repo.search_by_title(title)
+    #     if not books:
+    #         raise HTTPException("No se encontraron libros con ese título", status_code=404)
+    #     return books
 
     @patch("/{book_id:int}", dto=BookUpdateDTO)
     async def update_book(
